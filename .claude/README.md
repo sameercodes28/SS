@@ -66,16 +66,35 @@ Just start chatting! Claude will automatically:
 No need to say "Read .claude/context.md first" anymore!
 
 ### Ending a Session
-Ask Claude:
+
+**Option 1: Use the slash command (Easiest)**
+```
+/update-context
+```
+
+Claude will:
+- Read current context.md
+- Ask what you worked on today
+- Format it properly
+- Show you a preview
+- Save the update
+
+**Option 2: Manual prompt**
 ```
 "Please update .claude/context.md with today's changes"
 ```
 
-Claude will add:
-- What was changed
-- Files modified
-- Decisions made
-- New tasks/issues
+**Option 3: Git will remind you**
+
+When you commit code, git will check if context.md was updated. If not, you'll see:
+
+```bash
+⚠️  REMINDER: You're committing code changes but .claude/context.md hasn't been updated.
+
+   Quick update: Type '/update-context' in Claude Code
+
+   Continue with commit anyway? (y/N)
+```
 
 ## Example Workflow
 
@@ -105,9 +124,12 @@ You: "Update context.md with what we did"
 
 ```
 .claude/
-├── README.md         ← This file (explains the setup)
-├── instructions.md   ← Auto-loaded by Claude Code
-└── context.md        ← Session memory & project state
+├── README.md                  ← This file (explains the setup)
+├── instructions.md            ← Auto-loaded by Claude Code
+├── context.md                 ← Session memory & project state
+└── commands/                  ← Custom slash commands
+    ├── README.md              ← Command documentation
+    └── update-context.md      ← /update-context command
 ```
 
 ## Configuration
