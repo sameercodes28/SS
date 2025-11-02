@@ -1,10 +1,57 @@
 # 🏗️ S&S Price Tool - System Architecture
 
-**Last Updated:** November 1, 2025
+**Last Updated:** November 2, 2025
 
 ---
 
-## 📐 **High-Level Architecture**
+## 🎯 **Two-Phase System Overview**
+
+This application operates in **two distinct phases**:
+
+### **Phase 1: Data Generation (One-Time Setup)**
+**Who:** Developer only
+**Where:** Local machine
+**When:** Initially, then quarterly for updates
+**Tool:** `sku_discovery_tool.py`
+
+```
+Developer → Scraper → S&S Website/APIs → 4 JSON Files
+(You)       (Local)   (Scrapes HTML &    (products.json,
+                       Fabric API)         sizes.json,
+                                          covers.json,
+                                          fabrics.json)
+```
+
+**Process:**
+1. Scraper makes GET requests to S&S category pages (sofas, beds, etc.)
+2. Extracts product names, SKUs, and types from HTML
+3. For each product, calls `/GetPDPFabrics` API to get fabric options
+4. Builds 4 JSON "brain" files with all translation mappings
+5. Takes 20-30 minutes to complete
+
+### **Phase 2: Live Application (Production Use)**
+**Who:** Salespeople
+**Where:** Any device with browser
+**When:** 24/7 after deployment
+**Tool:** `index.html` + `main.py`
+
+```
+Salesperson → Frontend → Backend → S&S APIs → Backend → Frontend → Salesperson
+(Phone)      (GitHub   (GCF)      (Sofa/Bed  (Simplify (Display  (Sees price)
+              Pages)               APIs)       response) results)
+```
+
+**Process:**
+1. User speaks/types query
+2. Frontend sends to backend
+3. Backend translates using JSON files (loaded in memory)
+4. Backend calls correct S&S API
+5. Backend simplifies response and caches
+6. Frontend displays price + images + specs
+
+---
+
+## 📐 **High-Level Architecture (Live Application)**
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -281,26 +328,89 @@ Step 9: Display
 
 ---
 
-## 💾 **Data Flow Diagram**
+## 💾 **Complete Data Flow (Both Phases)**
+
+### **Phase 1: Data Generation (Scraper Flow)**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  Developer (Local Machine)                                   │
+│  $ python3 sku_discovery_tool.py                            │
+└────────────────────┬────────────────────────────────────────┘
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────────────┐
+│  Scraper Process (sku_discovery_tool.py)                    │
+├─────────────────────────────────────────────────────────────┤
+│  Step 1: Scrape Category Pages                              │
+│    GET /sofas, /chairs, /beds, /mattresses, etc.           │
+│         ↓                                                    │
+│    Extract: product names, SKUs, types                      │
+│         ↓                                                    │
+│    Result: products.json (base structure)                   │
+│                                                              │
+│  Step 2: Scrape Size Options                                │
+│    For each product:                                         │
+│      GET /product-page                                       │
+│      Parse size modal HTML                                   │
+│         ↓                                                    │
+│    Result: sizes.json                                        │
+│                                                              │
+│  Step 3: Scrape Cover Options                               │
+│    For each product:                                         │
+│      Parse cover options from size modal                     │
+│         ↓                                                    │
+│    Result: covers.json                                       │
+│                                                              │
+│  Step 4: Call Fabric API                                    │
+│    For each product:                                         │
+│      POST /GetPDPFabrics                                     │
+│      Payload: {sku: "alw", type: "sofa"}                   │
+│         ↓                                                    │
+│    Receive: Array of fabrics with colors, tiers, swatches   │
+│         ↓                                                    │
+│    Result: fabrics.json (23 MB)                             │
+└────────────────────┬────────────────────────────────────────┘
+                     │
+                     │ Time: 20-30 minutes
+                     │ Output: 4 JSON files
+                     │
+                     ▼
+┌─────────────────────────────────────────────────────────────┐
+│  Local Disk                                                  │
+│  ✓ products.json  (71 KB)  - 210 products                  │
+│  ✓ sizes.json     (20 KB)  - Size mappings                 │
+│  ✓ covers.json    (4.8 KB) - Cover options                 │
+│  ✓ fabrics.json   (23 MB)  - Fabric data                   │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### **Phase 2: Live Application (Runtime Flow)**
 
 ```
 ┌───────────────┐
-│  Scraper      │ (One-time, local)
-│  Runs 20-30   │
-│  minutes      │
+│  4 JSON Files │ (From Phase 1)
+│  Ready for    │
+│  deployment   │
 └───────┬───────┘
         │
-        │ Generates 4 JSON files
+        │ Deployed with main.py to GCF
         │
         ▼
 ┌───────────────┐
-│  products.json │
-│  sizes.json    │ (Deployed with backend)
-│  covers.json   │
-│  fabrics.json  │
+│  Google Cloud │
+│  Functions    │
+│  Container    │
+│               │
+│  /workspace/  │
+│  ├─ main.py   │
+│  ├─ products  │
+│  ├─ sizes     │
+│  ├─ covers    │
+│  └─ fabrics   │
 └───────┬───────┘
         │
-        │ Loaded once at function startup
+        │ Container starts → Loads JSON into RAM
         │
         ▼
 ┌───────────────┐
@@ -308,13 +418,19 @@ Step 9: Display
 │  (Backend)    │
 │               │
 │  In-Memory:   │
-│  • 4 JSON     │
-│    files      │
+│  • PRODUCT_   │
+│    SKU_MAP    │
+│  • SIZE_      │
+│    SKU_MAP    │
+│  • COVERS_    │
+│    SKU_MAP    │
+│  • FABRIC_    │
+│    SKU_MAP    │
 │  • Cache      │
 │    (5-min TTL)│
 └───────┬───────┘
         │
-        │ Called by frontend
+        │ Called by frontend on each user query
         │
         ▼
 ┌───────────────┐
