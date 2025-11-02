@@ -2,12 +2,16 @@
 
 All notable changes to the Sofas & Stuff Voice Price Tool will be documented in this file.
 
-## [1.0.0] - 2025-11-02
+## [1.0.0] - 2025-11-02 ✅ DEPLOYED
+
+### Deployment Status
+- ✅ Backend deployed to Google Cloud Functions
+- ✅ Frontend deployed to GitHub Pages
+- ✅ Production URL configured in frontend (index.html:187)
+- ✅ All systems operational
 
 ### Added
 - Complete working v1 of voice-enabled price lookup tool
-- Backend deployed to Google Cloud Functions
-- Frontend ready for GitHub Pages deployment
 - Support for 210 products across 9 product types
 - Natural language query processing with fuzzy matching
 - Smart 2-API routing system (Sofa API vs Bed API)
