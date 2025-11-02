@@ -2,7 +2,10 @@
 
 **Last Updated:** 2025-11-02 (v1.0.0 finalized and cleaned)
 **Current Version:** v1.0.0
-**Project Status:** Live in Production ✅ (v1 Complete - Ready for v2 Development)
+**Project Status:** Live in Production ✅ (Stable - v2 in separate repo)
+
+> **Important:** This is the v1 STABLE repository. Do NOT make experimental changes here.
+> **v2 Development:** See separate repo at ~/Desktop/SS-2 (ss-price-tool-v2)
 
 > **Purpose:** This file helps Claude (or any LLM) quickly understand the project state, recent changes, and ongoing work. Update this file at the end of each session.
 

@@ -1,8 +1,10 @@
-# Sofas & Stuff Voice Price Check Tool
+# Sofas & Stuff Voice Price Check Tool - v1
 
 **Version:** 1.0.0
-**Status:** Production Ready ✅
+**Status:** Production Ready ✅ (Stable Release)
 **Last Updated:** November 2, 2025
+
+> **Note:** This is the v1 stable release. For v2 experimental development, see the [v2 repository](https://github.com/YOUR_USERNAME/ss-price-tool-v2).
 
 A voice-enabled price lookup tool for Sofas & Stuff salespeople. Speak or type natural language queries (e.g., "alwinton snuggler pacific") and instantly get real-time pricing from the company's internal APIs.
 
