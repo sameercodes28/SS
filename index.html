@@ -24,166 +24,171 @@
         .listening {
             animation: pulse 1.5s infinite;
         }
-        .carousel-image {
-            display: none;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+        /* Simple transition for results */
+        #result-card {
+            transition: all 0.3s ease-out;
         }
-        .carousel-image.active {
-            display: block;
+        /* Hide scrollbar */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
         }
     </style>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen py-12">
-    <div class="bg-white rounded-2xl shadow-xl p-6 sm:p-8 max-w-2xl w-full mx-4">
+<body class="bg-gray-100 flex items-center justify-center min-h-screen py-12 px-4">
+    <div class="bg-white rounded-2xl shadow-xl p-6 sm:p-8 max-w-2xl w-full">
         
         <!-- Header -->
         <div class="text-center mb-6">
             <h1 class="text-3xl font-bold text-gray-800">S&S Voice Price Check</h1>
-            <p class="text-gray-500 mt-2">Tap the mic or type to get a price.</p>
-            <p class="text-sm text-gray-400 mt-1">e.g., "Alwinton snuggler pacific" or "Arles super king bed waves"</p>
+            <p class="text-gray-500 text-sm mt-2">
+                e.g., "Alwinton snuggler pacific" or "Arles super king bed waves"
+            </p>
         </div>
 
-        <!-- Microphone Button -->
-        <div class="flex justify-center my-8 sm:my-10">
-            <button id="micButton" class="bg-blue-500 hover:bg-blue-600 text-white rounded-full p-6 transition-all duration-300 transform active:scale-90 focus:outline-none">
-                <svg id="micIcon" class="w-10 h-10" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a6 6 0 0 0 6-6v-1.5m-6 7.5a6 6 0 0 1-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15a3 3 0 0 1-3-3V4.5a3 3 0 0 1 6 0v7.5a3 3 0 0 1-3 3Z" />
+        <!-- Voice Button -->
+        <div class="flex justify-center mb-4">
+            <button id="mic-button" class="bg-blue-500 hover:bg-blue-600 text-white rounded-full p-6 transition-all duration-200 shadow-lg">
+                <svg id="mic-icon" class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a.75.75 0 00.75-.75V6.31l.011-.005a3.375 3.375 0 00-6.75 0l.01.005v11.735A.75.75 0 0012 18.75zM12 6.31v11.735" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.31a3.375 3.375 0 016.74 0l.01.005v11.735a3.375 3.375 0 01-6.75 0l.011-.005V6.31zM4.5 12.75a.75.75 0 01.75-.75h.01a.75.75 0 01.75.75v.01a.75.75 0 01-.75.75H5.25a.75.75 0 01-.75-.75v-.01zM18 12.75a.75.75 0 01.75-.75h.01a.75.75 0 01.75.75v.01a.75.75 0 01-.75.75h-.01a.75.75 0 01-.75-.75v-.01zM12 21a.75.75 0 01.75.75v.01a.75.75 0 01-.75.75h-.01a.75.75 0 01-.75-.75v-.01a.75.75 0 01.75-.75h.01z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 15a.75.75 0 01.75-.75h.01a.75.75 0 01.75.75v.01a.75.75 0 01-.75.75h-.01a.75.75 0 01-.75-.75v-.01zM15 15a.75.75 0 01.75-.75h.01a.75.75 0 01.75.75v.01a.75.75 0 01-.75.75h-.01a.75.75 0 01-.75-.75v-.01z" />
                 </svg>
             </button>
         </div>
 
-        <!-- (Critique #4) Manual Text Input Fallback -->
-        <div class="flex space-x-2 mb-4">
-            <input type="text" id="manualInput" placeholder="Or type manually: 'Alwinton snuggler pacific'"
-                   class="flex-grow w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-            <button id="searchButton" class="bg-gray-700 hover:bg-gray-800 text-white font-medium px-5 py-2 rounded-lg transition-colors">
+        <!-- Manual Input Fallback (Critique #4) -->
+        <div class="flex gap-2 mb-4">
+            <input type="text" id="manual-input" placeholder="Or type manually..." class="flex-grow w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <button id="search-button" class="bg-gray-700 hover:bg-gray-800 text-white font-semibold px-6 py-3 rounded-xl shadow-sm transition-all duration-200">
                 Search
             </button>
         </div>
 
-        <!-- Status & Results Area -->
-        <div id="statusArea" class="text-center min-h-[4rem] mb-4 flex items-center justify-center">
-            <p id="statusText" class="text-lg text-gray-600 font-medium"></p>
+        <!-- Status Text -->
+        <div class="text-center h-6 mb-4">
+            <p id="status-text" class="text-gray-600 text-lg"></p>
+            <div id="loading-spinner" class="hidden h-6 w-6 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
         </div>
-        
-        <!-- Loading Spinner (Hidden by default) -->
-        <div id="loadingSpinner" class="hidden flex justify-center items-center mb-4">
-            <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-            <p class="ml-3 text-gray-500">Fetching price...</p>
-        </div>
-        
-        <!-- Results Card (Hidden by default) -->
-        <div id="resultsCard" class="hidden bg-white border border-gray-200 rounded-lg overflow-hidden">
-            <!-- (Critique #12) Image Carousel -->
-            <div class="relative w-full bg-gray-200 h-64 sm:h-80">
-                <div id="imageCarousel" class="w-full h-full flex items-center justify-center text-gray-400 font-medium overflow-hidden relative">
-                    <!-- Images will be loaded here -->
+
+        <!-- Result Card -->
+        <div id="result-card" class="bg-gray-50 border border-gray-200 rounded-xl shadow-inner p-5 max-h-0 overflow-hidden opacity-0">
+            
+            <!-- Image Carousel (Critique #12) -->
+            <div id="image-container" class="relative w-full aspect-video bg-gray-200 rounded-lg overflow-hidden mb-4 hidden">
+                <div id="image-carousel" class="w-full h-full flex transition-transform duration-300">
+                    <!-- Images will be inserted here by JS -->
+                </div>
+                <button id="prev-button" class="absolute left-2 top-1/2 -translate-y-1/2 bg-black/30 text-white p-2 rounded-full hidden">&lt;</button>
+                <button id="next-button" class="absolute right-2 top-1/2 -translate-y-1/2 bg-black/30 text-white p-2 rounded-full hidden">&gt;</button>
+                <div id="no-image" class="w-full h-full flex items-center justify-center text-gray-500 text-lg hidden">
                     No Image Available
                 </div>
-                <button id="prevBtn" class="hidden absolute left-2 top-1/2 -translate-y-1/2 bg-black/30 text-white p-2 rounded-full hover:bg-black/50 focus:outline-none">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
-                </button>
-                <button id="nextBtn" class="hidden absolute right-2 top-1/2 -translate-y-1/2 bg-black/30 text-white p-2 rounded-full hover:bg-black/50 focus:outline-none">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-                </button>
+            </div>
+
+            <!-- Price & Title -->
+            <div class="flex justify-between items-start mb-4">
+                <div>
+                    <h2 id="product-name" class="text-2xl font-bold text-gray-900"></h2>
+                    <p id="fabric-name" class="text-lg text-gray-700"></p>
+                </div>
+                <div class="text-right flex-shrink-0 ml-4">
+                    <p id="price" class="text-3xl font-bold text-blue-600"></p>
+                    <p id="old-price" class="text-lg text-gray-500 line-through"></p>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="mb-4">
+                <div class="border-b border-gray-200">
+                    <nav class="-mb-px flex gap-6" aria-label="Tabs">
+                        <button id="tab-specs" class="tab-button border-blue-500 text-blue-600 whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm">Specifications</button>
+                        <button id="tab-fabric" class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm">Fabric Details</button>
+                    </nav>
+                </div>
+            </div>
+
+            <!-- Tab Content -->
+            <div id="content-specs" class="tab-content">
+                <ul id="specs-list" class="list-disc pl-5 space-y-1 text-gray-700">
+                    <!-- Specs will be inserted here by JS -->
+                </ul>
+                <p id="no-specs" class="text-gray-500 hidden">No specifications available for this product.</p>
             </div>
             
-            <div class="p-4 sm:p-6">
-                <!-- Product Name & Price -->
-                <div class="flex flex-col sm:flex-row justify-between items-start mb-3">
-                    <div class="mb-2 sm:mb-0">
-                        <h2 id="productName" class="text-2xl font-bold text-gray-900"></h2>
-                        <p id="fabricName" class="text-lg text-gray-600"></p>
-                    </div>
-                    <div class="text-left sm:text-right flex-shrink-0 sm:ml-4">
-                        <p id="price" class="text-3xl font-bold text-blue-600"></p>
-                        <p id="oldPrice" class="text-md text-gray-400 line-through"></p>
-                    </div>
-                </div>
-
-                <!-- Specs & Fabric Details Tabs -->
-                <div>
-                    <div class="border-b border-gray-200">
-                        <nav class="-mb-px flex space-x-6" aria-label="Tabs">
-                            <button id="tab-specs" class="tab-button border-blue-500 text-blue-600 whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm">Specifications</button>
-                            <button id="tab-fabric" class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm">Fabric Details</button>
-                        </nav>
-                    </div>
-                    
-                    <!-- Specs Content -->
-                    <div id="content-specs" class="tab-content py-4">
-                        <ul id="specsList" class="list-disc list-inside space-y-1 text-gray-700 text-sm">
-                            <!-- Specs will be loaded here -->
-                        </ul>
-                    </div>
-                    
-                    <!-- Fabric Content -->
-                    <div id="content-fabric" class="tab-content py-4 hidden">
-                        <div class="flex items-start">
-                            <img id="fabricSwatch" src="" alt="Fabric Swatch" class="w-20 h-20 rounded-md border border-gray-200 object-cover flex-shrink-0">
-                            <div class="ml-4">
-                                <p class="text-sm text-gray-700"><strong class="text-gray-900">Tier:</strong> <span id="fabricTier"></span></p>
-                                <p id="fabricDescription" class="text-sm text-gray-700 mt-1"></p>
-                            </div>
-                        </div>
+            <div id="content-fabric" class="tab-content hidden">
+                <div class="flex items-center gap-4">
+                    <img id="fabric-swatch" src="" alt="Fabric Swatch" class="w-20 h-20 rounded-lg border border-gray-300">
+                    <div>
+                        <p class="text-sm text-gray-600">Collection: <span id="fabric-tier" class="font-semibold text-gray-800"></span></p>
+                        <p id="fabric-desc" class="text-sm text-gray-600 mt-1"></p>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- (Critique #19) Query History -->
-        <div id="historyContainer" class="mt-6 hidden">
-            <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wide">Recent Queries</h3>
-            <div id="historyList" class="mt-2 space-y-1">
-                <!-- History items will be injected here -->
+        </div>
+        
+        <!-- Recent Queries (Critique #19) -->
+        <div id="history-container" class="mt-8 hidden">
+            <h3 class="text-sm font-semibold text-gray-600 uppercase tracking-wide mb-2">Recent Queries</h3>
+            <div id="history-list" class="flex flex-col gap-2">
+                <!-- History items will be inserted here -->
             </div>
         </div>
     </div>
 
     <script>
         // --- DOM Elements ---
-        const micButton = document.getElementById('micButton');
-        const micIcon = document.getElementById('micIcon');
-        const statusText = document.getElementById('statusText');
-        const loadingSpinner = document.getElementById('loadingSpinner');
-        const resultsCard = document.getElementById('resultsCard');
-        const manualInput = document.getElementById('manualInput');
-        const searchButton = document.getElementById('searchButton');
+        const micButton = document.getElementById('mic-button');
+        const micIcon = document.getElementById('mic-icon');
+        const statusText = document.getElementById('status-text');
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const resultCard = document.getElementById('result-card');
         
-        // Result fields
-        const productName = document.getElementById('productName');
-        const fabricName = document.getElementById('fabricName');
+        const manualInput = document.getElementById('manual-input');
+        const searchButton = document.getElementById('search-button');
+
+        const productName = document.getElementById('product-name');
+        const fabricName = document.getElementById('fabric-name');
         const price = document.getElementById('price');
-        const oldPrice = document.getElementById('oldPrice');
-        const imageCarousel = document.getElementById('imageCarousel');
-        const prevBtn = document.getElementById('prevBtn');
-        const nextBtn = document.getElementById('nextBtn');
-        const specsList = document.getElementById('specsList');
-        const fabricTier = document.getElementById('fabricTier');
-        const fabricDescription = document.getElementById('fabricDescription');
-        const fabricSwatch = document.getElementById('fabricSwatch');
-        
+        const oldPrice = document.getElementById('old-price');
+
+        // Image Carousel
+        const imageContainer = document.getElementById('image-container');
+        const imageCarousel = document.getElementById('image-carousel');
+        const noImage = document.getElementById('no-image');
+        const prevButton = document.getElementById('prev-button');
+        const nextButton = document.getElementById('next-button');
+
         // Tabs
         const tabSpecs = document.getElementById('tab-specs');
         const tabFabric = document.getElementById('tab-fabric');
         const contentSpecs = document.getElementById('content-specs');
         const contentFabric = document.getElementById('content-fabric');
+        const specsList = document.getElementById('specs-list');
+        const noSpecs = document.getElementById('no-specs');
+        
+        const fabricSwatch = document.getElementById('fabric-swatch');
+        const fabricTier = document.getElementById('fabric-tier');
+        const fabricDesc = document.getElementById('fabric-desc');
 
         // History
-        const historyContainer = document.getElementById('historyContainer');
-        const historyList = document.getElementById('historyList');
-        let currentImages = [];
+        const historyContainer = document.getElementById('history-container');
+        const historyList = document.getElementById('history-list');
+
         let currentImageIndex = 0;
+        let totalImages = 0;
 
         // --- Config ---
         // !! IMPORTANT: REPLACE THIS with your Google Cloud Function URL
         // Example: 'https://us-central1-my-project-12345.cloudfunctions.net/sofa-price-api/getPrice'
-        const BACKEND_API_URL = 'https://europe-west2-sofaproject-476903.cloudfunctions.net/sofa-price-calculator/getPrice';
-        
-        // (Critique #7) To enable auth, uncomment this and set the key
-        // const API_KEY = 'YOUR_API_KEY_HERE'; 
+       const BACKEND_API_URL = 'https://europe-west2-sofaproject-476903.cloudfunctions.net/sofa-price-calculator/getPrice';
+
+        // // (Critique #7) To enable auth, uncomment this and set the key
+        // const API_KEY = 'YOUR_API_KEY_HERE';
 
         // Check if the URL has been replaced
         if (BACKEND_API_URL.includes('YOUR_GOOGLE_CLOUD_FUNCTION_URL_HERE')) {
@@ -206,243 +211,256 @@
             recognition.maxAlternatives = 1;
 
             recognition.onstart = () => {
-                micButton.classList.add('listening', 'bg-red-500');
                 statusText.textContent = 'Listening...';
-                statusText.classList.remove('text-red-500');
-                resultsCard.classList.add('hidden');
-            };
-
-            recognition.onspeechend = () => {
-                recognition.stop();
-                micButton.classList.remove('listening', 'bg-red-500');
+                micButton.classList.add('listening', 'bg-red-500');
+                micButton.classList.remove('bg-blue-500');
             };
 
             recognition.onresult = (event) => {
                 const query = event.results[0][0].transcript;
-                manualInput.value = query; // Put recognized text in input
-                statusText.textContent = `You said: "${query}"`;
+                manualInput.value = query; // Put recognized text in the box
                 fetchPrice(query);
             };
 
             recognition.onerror = (event) => {
-                console.error('Speech recognition error:', event.error);
-                let errorMsg = `Error: ${event.error}. Try again.`;
-                if(event.error === 'not-allowed' || event.error === 'service-not-allowed') {
-                    errorMsg = "Speech recognition blocked. Please allow microphone access.";
+                if (event.error === 'no-speech') {
+                    showError('No speech detected. Please try again.');
+                } else if (event.error === 'not-allowed') {
+                    showError('Microphone access denied. Please enable it in your browser settings.');
+                } else {
+                    showError('An error occurred with speech recognition.');
                 }
-                showError(errorMsg);
-                micButton.classList.remove('listening', 'bg-red-500');
             };
-            
+
+            recognition.onend = () => {
+                statusText.textContent = '';
+                micButton.classList.remove('listening', 'bg-red-500');
+                micButton.classList.add('bg-blue-500');
+            };
+
+            micButton.onclick = () => {
+                recognition.start();
+            };
+
         } else {
-            statusText.textContent = 'Speech recognition not supported. Please type your query.';
+            // (Critique #3) No Speech API. Disable mic and show a message.
             micButton.disabled = true;
             micButton.classList.add('opacity-50', 'cursor-not-allowed');
+            statusText.textContent = 'Voice recognition not supported in this browser.';
         }
 
-        // --- Event Listeners ---
-        micButton.addEventListener('click', () => {
-            if (recognition) {
-                recognition.start();
-            }
-        });
-
-        searchButton.addEventListener('click', () => {
+        // --- Manual Search ---
+        searchButton.onclick = () => {
             const query = manualInput.value;
             if (query) {
                 fetchPrice(query);
             } else {
                 showError('Please type a query first.');
             }
-        });
+        };
 
-        manualInput.addEventListener('keypress', (e) => {
+        manualInput.addEventListener('keypress', function (e) {
             if (e.key === 'Enter') {
                 searchButton.click();
             }
         });
 
-        tabSpecs.addEventListener('click', () => switchTab('specs'));
-        tabFabric.addEventListener('click', () => switchTab('fabric'));
-        prevBtn.addEventListener('click', showPrevImage);
-        nextBtn.addEventListener('click', showNextImage);
-
-        function switchTab(tab) {
-            const activeClasses = ['border-blue-500', 'text-blue-600'];
-            const inactiveClasses = ['border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300'];
-            
-            if (tab === 'specs') {
-                tabSpecs.classList.add(...activeClasses);
-                tabSpecs.classList.remove(...inactiveClasses);
-                tabFabric.classList.add(...inactiveClasses);
-                tabFabric.classList.remove(...activeClasses);
-                contentSpecs.classList.remove('hidden');
-                contentFabric.classList.add('hidden');
-            } else {
-                tabFabric.classList.add(...activeClasses);
-                tabFabric.classList.remove(...inactiveClasses);
-                tabSpecs.classList.add(...inactiveClasses);
-                tabSpecs.classList.remove(...activeClasses);
-                contentFabric.classList.remove('hidden');
-                contentSpecs.classList.add('hidden');
-            }
-        }
 
         // --- API Call ---
         async function fetchPrice(query) {
+            hideResult();
+            statusText.textContent = '';
             loadingSpinner.classList.remove('hidden');
-            resultsCard.classList.add('hidden');
-            statusText.textContent = 'Translating and fetching...';
-            statusText.classList.remove('text-red-500');
-            
-            try {
-                // (Critique #7) To enable auth, uncomment the 'Authorization' line
-                const headers = {
-                    'Content-Type': 'application/json',
-                    // 'Authorization': `Bearer ${API_KEY}` 
-                };
+            searchButton.disabled = true;
+            searchButton.classList.add('opacity-50');
 
+            try {
                 const response = await fetch(BACKEND_API_URL, {
                     method: 'POST',
-                    headers: headers,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        // // (Critique #7) To enable auth, uncomment this line
+                        // 'Authorization': `Bearer ${API_KEY}`
+                    },
                     body: JSON.stringify({ query: query })
                 });
 
                 const data = await response.json();
 
                 if (!response.ok) {
-                    throw new Error(data.error || `HTTP error! status: ${response.status}`);
+                    // Use the helpful error from the backend
+                    throw new Error(data.error || 'An unknown error occurred.');
                 }
-
-                displayResults(data);
+                
+                statusText.textContent = 'Success!';
+                statusText.classList.remove('text-red-500');
+                statusText.classList.add('text-green-500');
+                displayResult(data, query);
                 saveToHistory(query, data.price);
                 loadHistory();
-                loadingSpinner.classList.add('hidden');
 
             } catch (error) {
                 // (Critique #9) User-friendly error handling
                 console.error('Fetch error:', error);
                 let userMessage = 'An error occurred. Please try again.';
                 
-                if (error.message.includes('Could not find') || error.message.includes('not found')) {
-                    userMessage = 'Product not found. This prototype only knows "Alwinton" and "Arles".';
+                if (error.message.includes('Product not found')) {
+                    userMessage = error.message;
                 } else if (error.message.includes('Ambiguous fabric')) {
-                    userMessage = error.message; // Show the suggestions
-                } else if (error.message.includes('Network') || error.message.includes('Failed to fetch')) {
-                    userMessage = 'Network error. Please check your connection.';
-                } else if (error.message.includes('timeout')) {
-                    userMessage = 'Request timed out. The system may be slow. Please try again.';
-                } else {
-                    userMessage = error.message; // Show the specific error from our backend
+                    userMessage = error.message;
+                } else if (error.message.includes('Could not find a size')) {
+                    userMessage = error.message;
+                } else if (error.message.includes('API request failed')) {
+                    userMessage = "Could not price this item. Please check the combination and try again.";
+                } else if (error.message.includes('timed out')) {
+                    userMessage = 'Request timed out. The S&S server may be slow. Please try again.';
+                } else if (error.message.includes('Failed to fetch')) {
+                    userMessage = 'Network error. Please check your connection or the backend URL.';
                 }
                 
                 showError(userMessage);
+
+            } finally {
                 loadingSpinner.classList.add('hidden');
+                searchButton.disabled = false;
+                searchButton.classList.remove('opacity-50');
             }
         }
-        
-        function showError(message) {
-            statusText.textContent = message;
-            statusText.classList.add('text-red-500');
-        }
 
-        // --- Display Logic ---
-        function displayResults(data) {
-            statusText.textContent = 'Success!';
-            statusText.classList.remove('text-red-500');
-            
+        // --- UI Display ---
+
+        function displayResult(data, query) {
             productName.textContent = data.productName;
             fabricName.textContent = data.fabricName;
             price.textContent = data.price;
-            
-            oldPrice.style.display = data.oldPrice ? 'block' : 'none';
             oldPrice.textContent = data.oldPrice || '';
-            
-            // (Critique #12) Fill Image Carousel
-            currentImages = data.imageUrls || [];
-            currentImageIndex = 0;
-            if (currentImages.length > 0) {
-                showImage(0);
-                prevBtn.style.display = currentImages.length > 1 ? 'block' : 'none';
-                nextBtn.style.display = currentImages.length > 1 ? 'block' : 'none';
-            } else {
-                imageCarousel.innerHTML = '<span class="text-gray-500">No Image Available</span>';
-                prevBtn.style.display = 'none';
-                nextBtn.style.display = 'none';
-            }
-            
-            // Fill Specs List
+            oldPrice.classList.toggle('hidden', !data.oldPrice);
+
+            // Fabric Details
+            fabricTier.textContent = data.fabricDetails.tier;
+            fabricDesc.textContent = data.fabricDetails.description;
+            fabricSwatch.src = data.fabricDetails.swatchUrl || '';
+            fabricSwatch.classList.toggle('hidden', !data.fabricDetails.swatchUrl);
+
+            // Specs
             specsList.innerHTML = ''; // Clear old specs
             if (data.specs && data.specs.length > 0) {
+                noSpecs.classList.add('hidden');
                 data.specs.forEach(spec => {
                     const li = document.createElement('li');
-                    li.innerHTML = `<strong class="text-gray-800">${spec.Label}:</strong> ${spec.Value}`;
+                    li.innerHTML = `<span class="font-semibold">${spec.Label}:</span> ${spec.Value}`;
                     specsList.appendChild(li);
                 });
             } else {
-                specsList.innerHTML = '<li>No specifications available.</li>';
+                noSpecs.classList.remove('hidden');
             }
-            
-            // Fill Fabric Details
-            fabricTier.textContent = data.fabricDetails.tier;
-            fabricDescription.textContent = data.fabricDetails.description;
-            if (data.fabricDetails.swatchUrl) {
-                fabricSwatch.src = data.fabricDetails.swatchUrl;
-                fabricSwatch.classList.remove('hidden');
+
+            // Image Carousel (Critique #12)
+            imageCarousel.innerHTML = ''; // Clear old images
+            if (data.imageUrls && data.imageUrls.length > 0) {
+                totalImages = data.imageUrls.length;
+                currentImageIndex = 0;
+                imageContainer.classList.remove('hidden');
+                noImage.classList.add('hidden');
+
+                data.imageUrls.forEach(url => {
+                    const img = document.createElement('img');
+                    img.src = url;
+                    img.alt = data.productName;
+                    img.className = 'w-full h-full object-contain flex-shrink-0';
+                    imageCarousel.appendChild(img);
+                });
+                
+                prevButton.classList.toggle('hidden', totalImages <= 1);
+                nextButton.classList.toggle('hidden', totalImages <= 1);
+                updateCarousel();
+
             } else {
-                fabricSwatch.classList.add('hidden');
+                imageContainer.classList.remove('hidden');
+                noImage.classList.remove('hidden');
+                prevButton.classList.add('hidden');
+                nextButton.classList.add('hidden');
             }
 
-            resultsCard.classList.remove('hidden');
-            switchTab('specs'); // Default to specs tab
+            // Show the card
+            resultCard.style.maxHeight = '1000px'; // Set to a large value
+            resultCard.style.opacity = '1';
+            resultCard.style.padding = '1.25rem'; // 20px
         }
 
-        // (Critique #12) Carousel Logic
-        function showImage(index) {
-            if (currentImages.length === 0) {
-                 imageCarousel.innerHTML = '<span class="text-gray-500">No Image Available</span>';
-                 return;
+        function hideResult() {
+            resultCard.style.maxHeight = '0';
+            resultCard.style.opacity = '0';
+            resultCard.style.padding = '0';
+        }
+
+        function showError(message) {
+            statusText.textContent = message;
+            statusText.classList.add('text-red-500');
+            statusText.classList.remove('text-green-500');
+            hideResult();
+        }
+
+        // --- Carousel Logic ---
+        prevButton.onclick = () => {
+            currentImageIndex = (currentImageIndex > 0) ? currentImageIndex - 1 : totalImages - 1;
+            updateCarousel();
+        };
+
+        nextButton.onclick = () => {
+            currentImageIndex = (currentImageIndex < totalImages - 1) ? currentImageIndex + 1 : 0;
+            updateCarousel();
+        };
+
+        function updateCarousel() {
+            imageCarousel.style.transform = `translateX(-${currentImageIndex * 100}%)`;
+        }
+        
+        // --- Tabs Logic ---
+        function switchTab(isSpecs) {
+            if (isSpecs) {
+                tabSpecs.classList.add('border-blue-500', 'text-blue-600');
+                tabSpecs.classList.remove('border-transparent', 'text-gray-500');
+                tabFabric.classList.add('border-transparent', 'text-gray-500');
+                tabFabric.classList.remove('border-blue-500', 'text-blue-600');
+                
+                contentSpecs.classList.remove('hidden');
+                contentFabric.classList.add('hidden');
+            } else {
+                tabFabric.classList.add('border-blue-500', 'text-blue-600');
+                tabFabric.classList.remove('border-transparent', 'text-gray-500');
+                tabSpecs.classList.add('border-transparent', 'text-gray-500');
+                tabSpecs.classList.remove('border-blue-500', 'text-blue-600');
+
+                contentFabric.classList.remove('hidden');
+                contentSpecs.classList.add('hidden');
             }
-            // Clear carousel
-            imageCarousel.innerHTML = ''; 
-            // Add all images, but only show the active one
-            currentImages.forEach((src, i) => {
-                const img = document.createElement('img');
-                img.src = src;
-                img.alt = `${productName.textContent} ${i + 1}`;
-                img.className = `carousel-image ${i === index ? 'active' : ''}`;
-                imageCarousel.appendChild(img);
-            });
         }
-        function showPrevImage() {
-            currentImageIndex = (currentImageIndex - 1 + currentImages.length) % currentImages.length;
-            showImage(currentImageIndex);
-        }
-        function showNextImage() {
-            currentImageIndex = (currentImageIndex + 1) % currentImages.length;
-            showImage(currentImageIndex);
-        }
-
-        // (Critique #19) History Logic
+        
+        tabSpecs.onclick = () => switchTab(true);
+        tabFabric.onclick = () => switchTab(false);
+        
+        // --- History Logic (Critique #19) ---
         function saveToHistory(query, price) {
             let history = JSON.parse(localStorage.getItem('queryHistory') || '[]');
-            // Avoid duplicates
-            history = history.filter(item => item.query.toLowerCase() !== query.toLowerCase());
-            history.unshift({ query, price, timestamp: Date.now() });
-            history = history.slice(0, 5); // Keep last 5
+            // Add new item to the start
+            history.unshift({ query: query, price: price, timestamp: Date.now() });
+            // Keep only the last 5
+            history = history.slice(0, 5); 
             localStorage.setItem('queryHistory', JSON.stringify(history));
         }
 
         function loadHistory() {
             let history = JSON.parse(localStorage.getItem('queryHistory') || '[]');
+            historyList.innerHTML = ''; // Clear list
+            
             if (history.length > 0) {
                 historyContainer.classList.remove('hidden');
-                historyList.innerHTML = '';
                 history.forEach(item => {
                     const button = document.createElement('button');
-                    button.className = 'w-full text-left text-sm text-blue-600 hover:underline p-1 rounded-md hover:bg-gray-50';
+                    button.className = 'text-left text-sm text-blue-600 hover:underline p-2 bg-blue-50 rounded-lg';
                     button.textContent = `"${item.query}" (${item.price})`;
-                    button.onclick = () => {
+                    button.onclick = ()D => {
                         manualInput.value = item.query;
                         fetchPrice(item.query);
                     };
@@ -450,11 +468,10 @@
                 });
             }
         }
-        
+
         // Load history on page load
-        loadHistory();
+        document.addEventListener('DOMContentLoaded', loadHistory);
 
     </script>
 </body>
 </html>
-
