@@ -1,15 +1,80 @@
-# S&S Voice Price Check Tool - Complete Guide
+# Sofas & Stuff Voice Price Check Tool
 
-**Last Updated:** November 1, 2025  
-**Status:** Ready for Deployment ✅
+**Version:** 1.0.0
+**Status:** Production Ready ✅
+**Last Updated:** November 2, 2025
+
+A voice-enabled price lookup tool for Sofas & Stuff salespeople. Speak or type natural language queries (e.g., "alwinton snuggler pacific") and instantly get real-time pricing from the company's internal APIs.
 
 ---
 
-## 📋 **Project Overview**
+## 🚀 Quick Start
 
-A voice-enabled price lookup tool for Sofas & Stuff salespeople. Translates natural language queries into real-time prices from the S&S internal APIs.
+### Prerequisites
+- Python 3.10+ installed
+- Google Cloud account (free tier)
+- GitHub account (for frontend hosting)
+- All 4 JSON files generated (see [Data Generation](#data-generation))
 
-### **Architecture**
+### 1. Clone & Setup
+```bash
+cd ~/Desktop/SS-1
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+### 2. Test Locally
+```bash
+functions-framework --target=http_entry_point --debug
+```
+
+In a new terminal:
+```bash
+curl -X POST http://localhost:8080/getPrice \
+  -H "Content-Type: application/json" \
+  -d '{"query": "alwinton snuggler pacific"}'
+```
+
+Expected: JSON with price ~£1,409
+
+### 3. Deploy Backend
+```bash
+gcloud functions deploy sofa-price-calculator \
+  --gen2 \
+  --runtime python312 \
+  --entry-point http_entry_point \
+  --trigger-http \
+  --allow-unauthenticated \
+  --region europe-west2 \
+  --timeout 60s \
+  --memory 512MB
+```
+
+### 4. Update & Deploy Frontend
+Edit `index.html` line 188 with your backend URL:
+```javascript
+const BACKEND_API_URL = 'https://YOUR-GCF-URL/getPrice';
+```
+
+Push to GitHub and enable GitHub Pages.
+
+**Done!** Your app is live at `https://USERNAME.github.io/REPO-NAME/`
+
+---
+
+## 📖 Documentation
+
+- **[README.md](README.md)** - This file (getting started)
+- **[TECHNICAL_GUIDE.md](TECHNICAL_GUIDE.md)** - Complete technical deep dive
+- **[ARCHITECTURE.md](ARCHITECTURE.md)** - System architecture overview
+- **[CHANGELOG.md](CHANGELOG.md)** - Version history
+- **[docs/PRD.md](docs/PRD.md)** - Product requirements (reference)
+- **[docs/PROJECT_HANDOFF.md](docs/PROJECT_HANDOFF.md)** - Project handoff doc
+
+---
+
+## 🏗️ Architecture
 
 ```
 ┌─────────────────┐
@@ -25,88 +90,62 @@ A voice-enabled price lookup tool for Sofas & Stuff salespeople. Translates natu
          │ POST /getPrice
          ▼
 ┌─────────────────┐
-│ Backend (GCF)   │ (Google Cloud Functions - Free Tier)
+│ Backend (GCF)   │ (Google Cloud Functions - Free)
 │ - Translates    │
 │ - Caches        │
 │ - Routes APIs   │
 └────────┬────────┘
          │
-         ├──► Sofa API (for sofas/chairs/footstools)
-         └──► Bed API (for beds)
+         ├──► Sofa API (sofas/chairs/mattresses)
+         └──► Bed API (beds)
+```
+
+**Key Innovation:** Smart 2-API routing based on product type
+
+---
+
+## 📦 Project Structure
+
+```
+SS-1/
+├── README.md                 ⭐ Start here
+├── TECHNICAL_GUIDE.md        📚 Complete technical guide
+├── ARCHITECTURE.md           🏗️  System architecture
+├── CHANGELOG.md              📝 Version history
+├── main.py                   🐍 Backend (deploy to GCF)
+├── requirements.txt          📋 Backend dependencies
+├── index.html                🌐 Frontend (deploy to GitHub Pages)
+├── sku_discovery_tool.py     🔧 Data scraper (run locally)
+├── requirements_scraper.txt  📋 Scraper dependencies
+├── products.json             📊 Product catalog (71 KB)
+├── sizes.json                📊 Size options (20 KB)
+├── covers.json               📊 Cover types (4.8 KB)
+├── fabrics.json              📊 Fabric data (23 MB)
+└── docs/                     📁 Reference documentation
+    ├── PRD.md
+    └── PROJECT_HANDOFF.md
 ```
 
 ---
 
-## 🎯 **Current Status**
+## 🎯 Features
 
-### ✅ **Phase 1: COMPLETE**
-- Scraper ran successfully
-- Generated 4 JSON files:
-  - `products.json` ← All products with SKUs & types
-  - `sizes.json` ← Size options per product
-  - `covers.json` ← Cover types per product
-  - `fabrics.json` ← Fabric/color options per product
-
-### 📍 **Phase 2: TEST LOCALLY** (You are here!)
-Test the backend on your Mac before deploying to Google Cloud.
-
-### 🚀 **Phase 3: DEPLOY TO PRODUCTION**
-Upload everything to Google Cloud Functions.
+- ✅ **Voice Input** - Tap mic and speak your query
+- ✅ **Text Input** - Type query (fallback for all browsers)
+- ✅ **Real-Time Pricing** - Live prices with active discounts
+- ✅ **Product Images** - Image carousel for sofas/chairs
+- ✅ **Specifications** - Frame, cushions, feet, etc.
+- ✅ **Fabric Details** - Tier, composition, swatch image
+- ✅ **Fuzzy Matching** - Handles typos and variations
+- ✅ **Ambiguity Detection** - Suggests alternatives for vague queries
+- ✅ **Query History** - Last 5 queries saved locally
+- ✅ **Caching** - 5-minute response cache for performance
 
 ---
 
-## 🛠️ **Required Files**
+## 🧪 Testing
 
-### **Backend (Deploy to Google Cloud Functions)**
-1. `main.py` - Smart translator & API router
-2. `requirements.txt` - Backend dependencies
-3. `products.json` - Product dictionary (from scraper)
-4. `sizes.json` - Size dictionary (from scraper)
-5. `covers.json` - Cover dictionary (from scraper)
-6. `fabrics.json` - Fabric dictionary (from scraper)
-
-### **Frontend (Deploy to GitHub Pages)**
-7. `index.html` - Voice/text interface
-
-### **Scraper (Local use only - already run)**
-8. `sku_discovery_tool.py` - Generates the 4 JSON files
-9. `requirements_scraper.txt` - Scraper dependencies
-
----
-
-## 📖 **Phase 2: Test Locally**
-
-### **Prerequisites**
-- Python 3.10 or 3.11 installed
-- All files in one folder (e.g., `~/Desktop/sofa-price-tool`)
-- Generated JSON files from Phase 1
-
-### **Step-by-Step**
-
-#### 1. Setup Virtual Environment
-```bash
-cd ~/Desktop/sofa-price-tool
-python3 -m venv venv
-source venv/bin/activate
-```
-
-#### 2. Install Backend Dependencies
-```bash
-pip install -r requirements.txt
-```
-
-#### 3. Start Local Test Server
-```bash
-functions-framework --target=http_entry_point --debug
-```
-
-You should see:
-```
- * Serving Flask app 'main'
- * Running on http://127.0.0.1:8080
-```
-
-#### 4. Test with curl (Open New Terminal)
+### Local Testing
 
 **Test Sofa:**
 ```bash
@@ -129,343 +168,314 @@ curl -X POST http://localhost:8080/getPrice \
   -d '{"query": "arles super king waves"}'
 ```
 
-**Test Dog Bed:**
+**Test Mattress:**
 ```bash
 curl -X POST http://localhost:8080/getPrice \
   -H "Content-Type: application/json" \
-  -d '{"query": "dog bed large biscuit"}'
+  -d '{"query": "pillow top 7000 king extra firm"}'
 ```
 
-**Test Ambiguity (Should return error with suggestions):**
+**Test Ambiguity (should return error with suggestions):**
 ```bash
 curl -X POST http://localhost:8080/getPrice \
   -H "Content-Type: application/json" \
   -d '{"query": "alwinton blue"}'
 ```
 
-#### 5. Expected Response Format
-```json
-{
-  "productName": "Alwinton Snuggler",
-  "fabricName": "Sussex Plain - Pacific",
-  "price": "£1,409",
-  "oldPrice": null,
-  "imageUrls": [
-    "https://sofasandstuff.com/images/..."
-  ],
-  "specs": [
-    {"Name": "Frame", "Value": "Beech hardwood"},
-    ...
-  ],
-  "fabricDetails": {
-    "tier": "Essentials",
-    "description": "A robust plain fabric...",
-    "swatchUrl": "https://..."
-  }
-}
-```
+### Browser Testing
+
+Test on multiple devices:
+- iPhone (Safari) - Voice + Text
+- Android (Chrome) - Voice + Text
+- Desktop (Chrome/Safari) - Voice + Text
+- Desktop (Firefox) - Text only (no voice support)
 
 ---
 
-## 🚀 **Phase 3: Deploy to Production**
+## 🔄 Data Generation
 
-### **Step 1: Deploy Backend to Google Cloud Functions**
+### First Time Setup
 
-#### Prerequisites
-- Google Cloud project created (you have: `sofaproject-476903`)
-- `gcloud` CLI installed and authenticated
+Run the scraper to generate the 4 JSON files:
 
-#### Deploy Command
 ```bash
-cd ~/Desktop/sofa-price-tool
-
-gcloud functions deploy sofa-prototype-api \
-  --gen2 \
-  --runtime=python310 \
-  --region=us-central1 \
-  --source=. \
-  --entry-point=http_entry_point \
-  --trigger-http \
-  --allow-unauthenticated
-```
-
-**This uploads:**
-- `main.py`
-- `requirements.txt`
-- `products.json`
-- `sizes.json`
-- `covers.json`
-- `fabrics.json`
-
-#### After Deployment
-Google Cloud will give you a URL like:
-```
-https://us-central1-sofaproject-476903.cloudfunctions.net/sofa-prototype-api
-```
-
-**Save this URL!** You'll need it for the frontend.
-
----
-
-### **Step 2: Update & Deploy Frontend**
-
-#### 1. Edit index.html
-Open `index.html` and find line ~188:
-```javascript
-const BACKEND_API_URL = 'https://us-central1-sofaproject-476903.cloudfunctions.net/sofa-prototype-api/getPrice';
-```
-
-Replace with your new URL + `/getPrice`:
-```javascript
-const BACKEND_API_URL = 'https://YOUR-NEW-URL-HERE/getPrice';
-```
-
-#### 2. Push to GitHub Pages
-```bash
-# If not already a git repo
-git init
-git add index.html
-git commit -m "Deploy S&S Price Tool"
-
-# Create GitHub repo (via web or CLI)
-git remote add origin https://github.com/YOUR-USERNAME/S-S.git
-git branch -M main
-git push -u origin main
-```
-
-#### 3. Enable GitHub Pages
-1. Go to your repo on GitHub
-2. Settings → Pages
-3. Source: `main` branch, `/` (root)
-4. Save
-
-Your app will be live at:
-```
-https://YOUR-USERNAME.github.io/S-S/
-```
-
----
-
-## 🧪 **Phase 4: Final Testing**
-
-### Test on Actual Devices
-1. Open your `github.io` URL on:
-   - iPhone (Safari)
-   - Android (Chrome)
-   - iPad (Safari)
-   - Desktop (Chrome/Safari/Edge)
-
-2. Test both input methods:
-   - **Voice:** Tap mic, say "Alwinton snuggler pacific"
-   - **Text:** Type "snape chair waves" and click Search
-
-3. Verify:
-   - ✅ Price displays correctly
-   - ✅ Images load (if available)
-   - ✅ Specs show (for sofas/chairs)
-   - ✅ Fabric details appear
-   - ✅ Error messages are helpful
-
----
-
-## 🔧 **Maintenance**
-
-### Quarterly Update (or when S&S adds new products)
-
-#### 1. Re-run Scraper
-```bash
-cd ~/Desktop/sofa-price-tool
+cd ~/Desktop/SS-1
 source venv/bin/activate
 pip install -r requirements_scraper.txt
 python3 sku_discovery_tool.py
 ```
-Wait 20-30 minutes. You'll get updated JSON files.
 
-#### 2. Re-deploy Backend
+**Time:** 20-30 minutes
+**Output:** products.json, sizes.json, covers.json, fabrics.json
+
+### Quarterly Updates
+
+Re-run the scraper when:
+- S&S adds new products
+- Fabric/color options change
+- Quarterly maintenance (recommended)
+
 ```bash
-gcloud functions deploy sofa-prototype-api \
-  --gen2 \
-  --runtime=python310 \
-  --region=us-central1 \
-  --source=. \
-  --entry-point=http_entry_point \
-  --trigger-http \
-  --allow-unauthenticated
+# Re-scrape
+python3 sku_discovery_tool.py
+
+# Re-deploy backend
+gcloud functions deploy sofa-price-calculator \
+  --gen2 --runtime python312 --region europe-west2 \
+  --source=. --entry-point=http_entry_point \
+  --trigger-http --allow-unauthenticated
 ```
 
-This uploads the new JSON files. The frontend doesn't need updating.
+Frontend automatically uses new data - no update needed!
 
 ---
 
-## 🐛 **Troubleshooting**
+## 🐛 Troubleshooting
 
 ### "No product match found"
-- **Cause:** Product name not in `products.json`
-- **Fix:** Re-run scraper to get latest products
+**Cause:** Product not in products.json
+**Fix:** Re-run scraper to get latest products
 
 ### "Fabric not found"
-- **Cause:** Fabric/color name not in `fabrics.json`
-- **Fix:** Re-run scraper OR ask user for different color
+**Cause:** Fabric/color not in fabrics.json
+**Fix:** Re-run scraper OR try different color
 
 ### "Request timed out"
-- **Cause:** S&S API is slow/down
-- **Fix:** User should try again in a few minutes
+**Cause:** S&S API is slow/down
+**Fix:** Try again in a few minutes
 
-### "CORS error" in browser console
-- **Cause:** Backend not allowing requests from your domain
-- **Fix:** Check main.py has `Access-Control-Allow-Origin: *`
+### "CORS error" in browser
+**Cause:** Backend missing CORS headers
+**Fix:** Check main.py has `Access-Control-Allow-Origin: *` (line 66-74)
 
-### Frontend shows "Backend URL not set"
-- **Cause:** Still using placeholder URL in index.html
-- **Fix:** Edit index.html line ~188 with your real GCF URL
+### Frontend shows error connecting
+**Cause:** Wrong backend URL in index.html
+**Fix:** Update index.html line 188 with correct GCF URL
 
----
-
-## 💰 **Cost Breakdown**
-
-### Google Cloud Functions (Backend)
-- **Free Tier:** 2 million requests/month
-- **Typical Usage:** ~5,000-10,000 queries/month
-- **Your Cost:** $0/month ✅
-
-### GitHub Pages (Frontend)
-- **Cost:** FREE ✅
-- **Bandwidth:** Unlimited
-- **HTTPS:** Included
-
-### **Total Monthly Cost: $0** 🎉
+### Voice doesn't work
+**Cause:** Browser doesn't support Speech API OR not HTTPS
+**Fix:** Use Chrome/Safari OR ensure using HTTPS (GitHub Pages provides this)
 
 ---
 
-## 📊 **How It Works: Technical Deep Dive**
+## 💰 Cost Breakdown
 
-### 1. User Query Flow
+| Component | Service | Tier | Cost |
+|-----------|---------|------|------|
+| Frontend | GitHub Pages | Free | $0/month |
+| Backend | Google Cloud Functions | Free (2M requests/month) | $0/month |
+| Data Storage | JSON files (26 MB total) | Free | $0/month |
+| **TOTAL** | | | **$0/month** ✅ |
+
+**Typical Usage:** 5,000-10,000 queries/month (well within free tier)
+
+---
+
+## 📊 Data Coverage
+
+- **Total Products:** 210
+- **Products with Full Data:** 95 (100% coverage)
+- **Product Types:** 9 (sofa, chair, bed, mattress, footstool, dog_bed, sofa_bed, snuggler, corner_sofa)
+- **Size Options:** 2-8 per product
+- **Fabric Options:** 23MB of fabric data (thousands of combinations)
+- **Mattress Tensions:** 4 options (firm, medium, extra firm, soft)
+
+---
+
+## 🌍 Browser Compatibility
+
+| Browser | Voice | Text | Notes |
+|---------|-------|------|-------|
+| Chrome (Desktop) | ✅ | ✅ | Full support |
+| Safari (Mac) | ✅ | ✅ | Full support |
+| Safari (iOS) | ✅ | ✅ | Full support |
+| Chrome (Android) | ✅ | ✅ | Full support |
+| Edge (Chromium) | ✅ | ✅ | Full support |
+| Firefox | ❌ | ✅ | No webkitSpeechRecognition |
+| Samsung Internet | ❌ | ✅ | No webkitSpeechRecognition |
+
+---
+
+## 🔑 Key Technical Details
+
+### How It Works
+
+1. User speaks/types query (e.g., "alwinton snuggler pacific")
+2. Frontend sends POST to backend
+3. Backend translates query using 4 JSON files:
+   - "alwinton" → Product SKU: `alw`, Type: `sofa`
+   - "snuggler" → Size SKU: `snu`
+   - (default) → Cover SKU: `fit`
+   - "pacific" → Fabric SKU: `sxp`, Color SKU: `pac`
+4. Backend routes to correct S&S API based on product type
+5. Backend builds correct payload format
+6. S&S API returns price + specs + images
+7. Backend simplifies response and caches for 5 minutes
+8. Frontend displays price, images, specs, fabric details
+
+**For complete technical details, see [TECHNICAL_GUIDE.md](TECHNICAL_GUIDE.md)**
+
+### Smart 2-API Routing
+
+S&S uses different APIs for different product types:
+
+**Sofa API** (sofas, chairs, footstools, dog beds, mattresses):
+- Endpoint: `/ProductExtend/ChangeProductSize`
+- Payload: Combined SKU string (`querySku: "alwsnufitsxppac"`)
+- Response: Nested JSON with images
+
+**Bed API** (beds only):
+- Endpoint: `/Category/ProductPrice`
+- Payload: Component SKU parts (separate fields)
+- Response: Flat JSON without images
+
+Backend automatically selects the correct API!
+
+---
+
+## 🛠️ Development
+
+### File Descriptions
+
+**Backend Files (deploy to Google Cloud Functions):**
+- `main.py` - Smart translator & API router (383 lines)
+- `requirements.txt` - Backend dependencies (6 packages)
+- `products.json` - Product catalog with SKUs and types
+- `sizes.json` - Size options per product
+- `covers.json` - Cover types per product
+- `fabrics.json` - Fabric/color data per product
+
+**Frontend Files (deploy to GitHub Pages):**
+- `index.html` - Voice/text interface (478 lines)
+
+**Local Tools (for maintenance):**
+- `sku_discovery_tool.py` - Web scraper to generate JSON files (680 lines)
+- `requirements_scraper.txt` - Scraper dependencies (5 packages)
+- `test_mattress_scraper.py` - Test script for mattress scraping
+
+**Documentation:**
+- `README.md` - This file
+- `TECHNICAL_GUIDE.md` - Complete technical deep dive
+- `ARCHITECTURE.md` - System architecture
+- `CHANGELOG.md` - Version history
+- `docs/PRD.md` - Product requirements document
+- `docs/PROJECT_HANDOFF.md` - Project handoff documentation
+
+### Tech Stack
+
+**Backend:**
+- Python 3.12
+- Google Cloud Functions (Gen 2)
+- Flask (for jsonify helper)
+- functions-framework
+- requests (HTTP client)
+- fuzzywuzzy (fuzzy string matching)
+- python-Levenshtein (fuzzy matching algorithm)
+
+**Frontend:**
+- Vanilla JavaScript
+- TailwindCSS (via CDN)
+- webkitSpeechRecognition API
+- localStorage (for query history)
+
+**Infrastructure:**
+- Google Cloud Functions (serverless backend)
+- GitHub Pages (static frontend hosting)
+- No database (JSON files in memory)
+
+---
+
+## 📈 Success Metrics
+
+### Immediate (First Hour)
+- ✅ Function deploys without errors
+- ✅ Production tests pass (all product types)
+- ✅ No errors in logs
+
+### Short Term (First Week)
+- Query success rate > 95%
+- Response times < 2 seconds
+- No 500 errors
+
+### Long Term (Monthly)
+- Data stays current (re-scrape quarterly)
+- New products added as released
+- Performance remains stable
+
+---
+
+## 🎓 Learning Resources
+
+### For Understanding the Codebase
+
+1. **Start with:** [TECHNICAL_GUIDE.md](TECHNICAL_GUIDE.md)
+   - How Google Cloud Functions work
+   - How JSON files are loaded and used
+   - Complete query flow with examples
+   - Line-by-line code walkthrough
+
+2. **Then read:** [ARCHITECTURE.md](ARCHITECTURE.md)
+   - System architecture overview
+   - API routing logic
+   - Data structures
+   - Design decisions
+
+3. **Reference:** [docs/PRD.md](docs/PRD.md)
+   - Original product requirements
+   - Feature specifications
+   - Project goals
+
+---
+
+## 🤝 Contributing
+
+### Making Changes
+
+1. Make changes locally
+2. Test with `functions-framework --target=http_entry_point --debug`
+3. Verify all test queries pass
+4. Deploy to Google Cloud Functions
+5. Test in production
+6. Update CHANGELOG.md
+
+### Adding New Features
+
+1. Document in docs/PRD.md
+2. Implement and test locally
+3. Update TECHNICAL_GUIDE.md if architecture changes
+4. Deploy and test in production
+5. Update README.md with usage instructions
+
+---
+
+## 📞 Support
+
+### Logs & Monitoring
+
+**View Google Cloud Function logs:**
+```bash
+gcloud functions logs read sofa-price-calculator --limit=50
 ```
-"Alwinton snuggler pacific"
-         ↓
-┌────────────────────┐
-│ Frontend           │ User taps mic or types
-│ (index.html)       │ → Sends query to backend
-└────────────────────┘
-         ↓ POST /getPrice
-┌────────────────────┐
-│ Backend            │ Step 1: Parse query
-│ (main.py)          │   "alwinton" → Product SKU: "alw"
-│                    │   "snuggler" → Size SKU: "snu"
-│                    │   (default)  → Cover SKU: "fit"
-│                    │   "pacific"  → Fabric: "sxp", Color: "pac"
-│                    │
-│                    │ Step 2: Check product type
-│                    │   Type: "sofa" → Route to Sofa API
-│                    │
-│                    │ Step 3: Build payload
-│                    │   querySku: "alwsnufitsxppac"
-│                    │
-│                    │ Step 4: Call S&S API
-└────────────────────┘
-         ↓
-┌────────────────────┐
-│ S&S Internal API   │ Returns:
-│                    │ - Price: £1,409
-│                    │ - Images: [url1, url2, ...]
-│                    │ - Specs: {Frame: "Beech", ...}
-└────────────────────┘
-         ↓
-┌────────────────────┐
-│ Backend            │ Step 5: Simplify response
-│ (main.py)          │ Step 6: Cache for 5 minutes
-│                    │ Step 7: Return to frontend
-└────────────────────┘
-         ↓
-┌────────────────────┐
-│ Frontend           │ Displays:
-│ (index.html)       │ - Product name
-│                    │ - Price (big & bold)
-│                    │ - Images (carousel)
-│                    │ - Specs (frame, cushions, etc.)
-└────────────────────┘
+
+**View real-time logs:**
+```bash
+gcloud functions logs read sofa-price-calculator --follow
 ```
 
-### 2. Smart API Routing (The Key Innovation!)
-S&S uses **two different APIs** for pricing:
+### Common Issues
 
-**Sofa API** (for sofas, chairs, footstools, dog beds):
-```javascript
-POST /ProductExtend/ChangeProductSize
-Payload: {
-  sku: "alw",
-  querySku: "alwsnufitsxppac"  // Combined SKU string
-}
-```
+See [Troubleshooting](#-troubleshooting) section above.
 
-**Bed API** (for beds only):
-```javascript
-POST /Category/ProductPrice
-Payload: {
-  productsku: "arl",
-  sizesku: "skb",
-  coversku: "fit",
-  fabricSku: "sxp",
-  colourSku: "pac"  // Component SKU parts
-}
-```
-
-Our backend checks the `type` field in `products.json` and routes to the correct API automatically!
-
-### 3. Fuzzy Matching
-Users don't need exact names:
-- "alwinton" matches "Alwinton"
-- "3 seater" matches "3 Seater Sofa"
-- "wavy" matches "waves" (85%+ similarity)
-
-### 4. Caching
-- Responses are cached for 5 minutes
-- Reduces API calls to S&S
-- Faster responses for repeated queries
+For technical deep dive, see [TECHNICAL_GUIDE.md](TECHNICAL_GUIDE.md).
 
 ---
 
-## 🎓 **Key Learnings**
+## 🎉 You're Ready!
 
-### Why Google Cloud Functions?
-✅ Serverless (no server to maintain)  
-✅ Auto-scales (handles 1 or 1000 requests)  
-✅ Free tier is generous  
-✅ HTTPS included  
+Your project is production-ready. Follow the [Quick Start](#-quick-start) to deploy!
 
-### Why Not React/Next.js?
-❌ Requires hosting (Vercel/Netlify)  
-❌ More complex to maintain  
-❌ Can't call S&S APIs directly (CORS issues)  
-✅ **We use a simple HTML + GCF approach instead!**
-
-### Why GitHub Pages?
-✅ Free  
-✅ HTTPS included  
-✅ Works with static HTML  
-✅ Easy to update (just push to git)  
+**Questions?** Check the [TECHNICAL_GUIDE.md](TECHNICAL_GUIDE.md) for detailed explanations.
 
 ---
 
-## 📞 **Support**
-
-If the app breaks:
-1. Check if S&S website changed their HTML structure
-2. Re-run the scraper
-3. Check browser console for errors
-4. Check Google Cloud Functions logs:
-   ```bash
-   gcloud functions logs read sofa-prototype-api --limit=50
-   ```
-
----
-
-## 🎉 **You're Ready!**
-
-Your project is **production-ready**. All files are aligned and tested.
-
-**Next Steps:**
-1. ✅ Run Phase 2 (local testing)
-2. 🚀 Run Phase 3 (deployment)
-3. 🧪 Run Phase 4 (live testing)
-4. 🎊 Show it to your team!
+**Built with ❤️ for Sofas & Stuff**
